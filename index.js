@@ -2,12 +2,12 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const sharp = require('sharp');
 
-// Konfigurasi Client untuk Deployment
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
+        // Menggunakan path Chrome dari Railway (jika ada), jika tidak gunakan default lokal
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
         handleSIGINT: false,
-        // Argumen penting agar Chromium bisa jalan di server Linux (Railway/VPS)
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -21,23 +21,21 @@ const client = new Client({
     }
 });
 
-// Munculkan QR Code di Terminal/Logs
+// Menampilkan QR Code di Logs Railway
 client.on('qr', (qr) => {
     console.log('--- SCAN QR CODE DI BAWAH INI ---');
     qrcode.generate(qr, { small: true });
 });
 
-// Notifikasi Berhasil Login
 client.on('ready', () => {
     console.log('✅ Bot WhatsApp sudah aktif dan siap digunakan!');
 });
 
-// Logika Pesan Masuk
 client.on('message', async (msg) => {
     const chat = await msg.getChat();
     const body = msg.body.toLowerCase();
 
-    // 1. FITUR STIKER (!s)
+    // --- FITUR STIKER (!s) ---
     if (body === '!s' || body === '!stiker') {
         if (msg.hasMedia || (msg.hasQuotedMsg && (await msg.getQuotedMessage()).hasMedia)) {
             
@@ -67,26 +65,21 @@ client.on('message', async (msg) => {
                         stickerAuthor: "Gemini Bot"
                     });
                 } catch (err) {
-                    msg.reply('❌ Gagal memproses gambar menjadi stiker.');
+                    msg.reply('❌ Gagal memproses stiker.');
                     console.error(err);
                 }
             } else {
-                msg.reply('❌ Maaf, hanya bisa mengubah gambar menjadi stiker.');
+                msg.reply('❌ Kirim atau balas gambar dengan !s');
             }
-        } else {
-            msg.reply('Kirim gambar dengan caption *!s* atau balas gambar dengan *!s*');
         }
     }
 
-    // 2. FITUR PING
+    // --- MENU DEFAULT ---
     else if (body === 'p' || body === 'ping') {
-        await chat.sendStateTyping();
         msg.reply('Pong! Bot aktif 🤖');
     }
 
-    // 3. FITUR MENU
     else if (body === '!menu') {
-        await chat.sendStateTyping();
         const menu = `
 *DAFTAR MENU BOT*
 1. *!s* - Ubah gambar jadi stiker
@@ -96,12 +89,10 @@ client.on('message', async (msg) => {
         client.sendMessage(msg.from, menu);
     }
 
-    // 4. FITUR CEK JAM
     else if (body === '!jam') {
         const waktu = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
         msg.reply(`Waktu saat ini (WIB): \n${waktu}`);
     }
 });
 
-// Inisialisasi Bot
 client.initialize();

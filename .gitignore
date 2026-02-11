@@ -1,0 +1,22 @@
+# Dependency folders (sangat besar, tidak perlu diupload)
+node_modules/
+
+# WhatsApp Web Session Data (SANGAT PENTING)
+# Folder ini berisi kunci login Anda. Jika bocor, orang lain bisa membajak WA Anda.
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables (jika Anda menggunakan file .env untuk API Key)
+.env
+
+# MacOS system files
+.DS_Store
+
+# Folder temporary untuk proses gambar/stiker (jika ada)
+temp/
+*.webp
